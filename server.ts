@@ -58,29 +58,42 @@ const upload = multer({
 });
 
 // Post route for image upload
-
 app.post(
   "/upload",
-  upload.single("image"),
-  (req: Request, res: Response, next: NextFunction): void => {
+  (req: Request, res: Response, next: NextFunction) => {
+    upload.array("images", 10)(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res
+            .status(400)
+            .json({ error: "File size exceeds the 5MB limit." });
+        }
+        return res.status(400).json({ error: err.message });
+      } else if (err) {
+        return res.status(500).json({ error: "An unexpected error occurred." });
+      }
+      next();
+    });
+  },
+  (req: Request, res: Response): void => {
     console.log("Received image upload request");
 
-    if (!req.file) {
-      console.error("No file uploaded");
-      res.status(400).json({ error: "Please upload an image file" });
+    if (!req.files || (Array.isArray(req.files) && req.files.length === 0)) {
+      console.error("No files uploaded");
+      res.status(400).json({ error: "Please upload at least one image file" });
       return;
     }
 
-    const filePath = `/uploads/${req.file.filename}`;
-    console.log(`Image uploaded successfully: ${req.file.filename}`);
+    const files = req.files as Express.Multer.File[];
+    const filePaths = files.map((file) => `/uploads/${file.filename}`);
+    console.log(`Images uploaded successfully: ${filePaths.join(", ")}`);
 
     res.json({
-      message: "Image uploaded successfully",
-      filePath,
+      message: "Images uploaded successfully",
+      filePaths,
     });
 
-    console.log("Response sent to client with image path");
-    return;
+    console.log("Response sent to client with image paths");
   }
 );
 
