@@ -4,58 +4,202 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Image Upload</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 50px;
-        text-align: center;
-      }
-      .container {
-        max-width: 500px;
-        margin: 0 auto;
-      }
-      input[type="file"] {
-        display: block;
-        margin: 20px auto;
-      }
-      img {
-        margin-top: 20px;
-        max-width: 100%;
-        height: auto;
-      }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#6366F1",
+              secondary: "#4F46E5",
+              background: "#F3F4F6",
+              surface: "#FFFFFF",
+              text: "#1F2937",
+              accent: "#10B981",
+            },
+          },
+        },
+      };
+    </script>
   </head>
-  <body>
-    <div class="container">
-      <h1>Upload an Image</h1>
-      <form id="uploadForm">
-        <input
-          type="file"
-          id="imageFile"
-          name="image"
-          accept="image/*"
-          required
-        />
-        <button type="submit">Upload</button>
-      </form>
+  <body
+    class="bg-background text-text min-h-screen flex items-center justify-center p-4"
+  >
+    <div class="container mx-auto max-w-4xl">
+      <h1 class="text-5xl font-extrabold text-center mb-12 text-primary">
+        Image Uploader
+      </h1>
+      <div class="bg-surface rounded-2xl shadow-2xl p-8">
+        <form id="uploadForm" class="mb-8">
+          <div
+            id="dropZone"
+            class="border-3 border-dashed border-primary/30 rounded-xl p-12 text-center cursor-pointer hover:border-primary transition duration-300 bg-primary/5"
+          >
+            <input
+              type="file"
+              id="imageFiles"
+              name="images"
+              accept="image/*"
+              multiple
+              required
+              class="hidden"
+            />
+            <label for="imageFiles" class="cursor-pointer">
+              <svg
+                class="mx-auto h-20 w-20 text-primary/70"
+                stroke="currentColor"
+                fill="none"
+                viewBox="0 0 48 48"
+                aria-hidden="true"
+              >
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <p class="mt-6 text-xl font-semibold text-primary">
+                Click to upload or drag and drop
+              </p>
+              <p class="mt-2 text-sm text-gray-500">PNG, JPG, GIF up to 5MB</p>
+            </label>
+          </div>
+          <div
+            id="previewContainer"
+            class="mt-8 grid grid-cols-2 md:grid-cols-3 gap-6"
+          ></div>
+          <button
+            type="submit"
+            id="uploadButton"
+            class="mt-8 w-full bg-primary text-white py-4 px-6 rounded-xl hover:bg-secondary transition duration-300 flex items-center justify-center text-lg font-semibold shadow-lg hover:shadow-xl"
+          >
+            <span>Upload Images</span>
+            <svg
+              id="loadingIndicator"
+              class="animate-spin ml-3 h-5 w-5 text-white hidden"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </button>
+        </form>
 
-      <div id="result" style="display: none">
-        <h2>Uploaded Image:</h2>
-        <img id="uploadedImage" src="" alt="Uploaded Image" />
+        <div
+          id="errorMessage"
+          class="hidden mt-4 p-4 bg-red-100 text-red-700 rounded-xl"
+        ></div>
+
+        <div id="result" class="hidden mt-12">
+          <h2 class="text-3xl font-bold mb-6 text-primary">Uploaded Images</h2>
+          <div
+            id="uploadedImagesContainer"
+            class="grid grid-cols-1 md:grid-cols-3 gap-6"
+          ></div>
+        </div>
       </div>
     </div>
 
     <script>
+      const dropZone = document.getElementById("dropZone");
+      const fileInput = document.getElementById("imageFiles");
+      const previewContainer = document.getElementById("previewContainer");
+      const uploadButton = document.getElementById("uploadButton");
+      const loadingIndicator = document.getElementById("loadingIndicator");
+      const errorMessage = document.getElementById("errorMessage");
+
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, highlight, false);
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+      });
+
+      function highlight() {
+        dropZone.classList.add("border-primary", "bg-primary/10");
+        dropZone.classList.remove("border-primary/30", "bg-primary/5");
+      }
+
+      function unhighlight() {
+        dropZone.classList.remove("border-primary", "bg-primary/10");
+        dropZone.classList.add("border-primary/30", "bg-primary/5");
+      }
+
+      dropZone.addEventListener("drop", handleDrop, false);
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        displayPreviews(files);
+      }
+
+      fileInput.addEventListener("change", function (e) {
+        displayPreviews(this.files);
+      });
+
+      function displayPreviews(files) {
+        previewContainer.innerHTML = "";
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.className =
+              "w-full h-48 object-cover rounded-lg shadow-md hover:shadow-lg transition duration-300";
+            previewContainer.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
       document
         .getElementById("uploadForm")
         .addEventListener("submit", async function (event) {
           event.preventDefault();
 
           const formData = new FormData();
-          const fileInput = document.getElementById("imageFile");
-          formData.append("image", fileInput.files[0]);
+          const fileInput = document.getElementById("imageFiles");
+
+          if (fileInput.files.length === 0) {
+            showError("Please select at least one image to upload.");
+            return;
+          }
+
+          for (let i = 0; i < fileInput.files.length; i++) {
+            formData.append("images", fileInput.files[i]);
+          }
 
           try {
+            uploadButton.disabled = true;
+            loadingIndicator.classList.remove("hidden");
+            errorMessage.classList.add("hidden");
+
             const response = await fetch("/upload", {
               method: "POST",
               body: formData,
@@ -64,19 +208,40 @@
             const data = await response.json();
 
             if (response.ok) {
-              // Display the uploaded image
               const resultDiv = document.getElementById("result");
-              const uploadedImage = document.getElementById("uploadedImage");
-              uploadedImage.src = data.filePath;
-              resultDiv.style.display = "block";
+              const uploadedImagesContainer = document.getElementById(
+                "uploadedImagesContainer"
+              );
+
+              uploadedImagesContainer.innerHTML = "";
+
+              data.filePaths.forEach((filePath) => {
+                const img = document.createElement("img");
+                img.src = filePath;
+                img.className =
+                  "w-full h-48 object-cover rounded-lg shadow-md hover:shadow-lg transition duration-300";
+                uploadedImagesContainer.appendChild(img);
+              });
+
+              resultDiv.classList.remove("hidden");
+              previewContainer.innerHTML = "";
+              fileInput.value = "";
             } else {
-              alert(data.error || "Image upload failed");
+              showError(data.error || "Image upload failed");
             }
           } catch (err) {
-            alert("Error uploading image");
+            showError("Error uploading images");
             console.error(err);
+          } finally {
+            uploadButton.disabled = false;
+            loadingIndicator.classList.add("hidden");
           }
         });
+
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.remove("hidden");
+      }
     </script>
   </body>
 </html>
