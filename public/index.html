@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Upload</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 50px;
+        text-align: center;
+      }
+      .container {
+        max-width: 500px;
+        margin: 0 auto;
+      }
+      input[type="file"] {
+        display: block;
+        margin: 20px auto;
+      }
+      img {
+        margin-top: 20px;
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Upload an Image</h1>
+      <form id="uploadForm">
+        <input
+          type="file"
+          id="imageFile"
+          name="image"
+          accept="image/*"
+          required
+        />
+        <button type="submit">Upload</button>
+      </form>
+
+      <div id="result" style="display: none">
+        <h2>Uploaded Image:</h2>
+        <img id="uploadedImage" src="" alt="Uploaded Image" />
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+
+          const formData = new FormData();
+          const fileInput = document.getElementById("imageFile");
+          formData.append("image", fileInput.files[0]);
+
+          try {
+            const response = await fetch("/upload", {
+              method: "POST",
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              // Display the uploaded image
+              const resultDiv = document.getElementById("result");
+              const uploadedImage = document.getElementById("uploadedImage");
+              uploadedImage.src = data.filePath;
+              resultDiv.style.display = "block";
+            } else {
+              alert(data.error || "Image upload failed");
+            }
+          } catch (err) {
+            alert("Error uploading image");
+            console.error(err);
+          }
+        });
+    </script>
+  </body>
+</html>
