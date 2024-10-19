@@ -10,7 +10,7 @@ const app = express();
 
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir); // Create the uploads folder if it doesn't exist
+  fs.mkdirSync(uploadsDir);
   console.log("Created uploads directory");
 }
 
