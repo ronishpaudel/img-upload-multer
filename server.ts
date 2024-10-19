@@ -14,7 +14,6 @@ if (!fs.existsSync(uploadsDir)) {
   console.log("Created uploads directory");
 }
 
-// Serve the "public" folder for static files (like index.html)
 app.use(express.static("public"));
 
 // Serve the "uploads" folder for serving the uploaded images
