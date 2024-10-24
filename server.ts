@@ -16,7 +16,6 @@ if (!fs.existsSync(uploadsDir)) {
 
 app.use(express.static("public"));
 
-// Serve the "uploads" folder for serving the uploaded images
 app.use("/uploads", express.static("uploads"));
 
 // set storage with multer
