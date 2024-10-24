@@ -21,7 +21,7 @@ app.use("/uploads", express.static("uploads"));
 // set storage with multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    console.log(`Storing image in the 'uploads' directory`); //logs
+    console.log(`Storing image in the 'uploads' directory`);
     cb(null, "uploads/"); // Set destination folder for uploaded images
   },
   filename: (req, file, cb) => {
