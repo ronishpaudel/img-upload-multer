@@ -103,7 +103,7 @@ const checkPort = (port: number): Promise<number> => {
     server.once("error", (err: any) => {
       if (err.code === "EADDRINUSE") {
         console.log(`Port ${port} is in use, trying port ${port + 1}...`);
-        resolve(checkPort(port + 1)); // Try next port
+        resolve(checkPort(port + 1)); //  next port
       } else {
         console.error("Error while checking port availability", err);
       }
