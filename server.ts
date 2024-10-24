@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import net from "net";
 import fs from "fs";
 
-const DEFAULT_PORT = 3001;
+const DEFAULT_PORT = 3000;
 const app = express();
 
 const uploadsDir = path.join(__dirname, "uploads");
