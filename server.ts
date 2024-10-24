@@ -48,7 +48,7 @@ const fileFilter = (
   }
 };
 
-//init multer with storage and file filter
+// multer with storage and file filter
 const upload = multer({
   storage,
   fileFilter,
