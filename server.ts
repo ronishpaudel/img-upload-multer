@@ -18,11 +18,10 @@ app.use(express.static("public"));
 
 app.use("/uploads", express.static("uploads"));
 
-// set storage with multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     console.log(`Storing image in the 'uploads' directory`);
-    cb(null, "uploads/"); // Set destination folder for uploaded images
+    cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = `${uuidv4()}${path.extname(file.originalname)}`;
@@ -31,7 +30,6 @@ const storage = multer.diskStorage({
   },
 });
 
-//filter to allow only image uploads
 const fileFilter = (
   req: Request,
   file: Express.Multer.File,
