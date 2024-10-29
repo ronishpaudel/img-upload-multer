@@ -1,7 +1,3 @@
-# Image Uploader using Multer and Express
-
-A simple and responsive web application for uploading and displaying images. This project allows users to upload multiple images, preview them before submission, and view the uploaded images.
-
 ## Features
 
 - Drag and drop file upload
